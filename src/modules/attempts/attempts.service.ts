@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { TestAttempt, AttemptStatus, SubmissionType, ReviewStatus, ResultType } from '../tests/entities/test-attempt.entity';
 import { TestUserAnswer } from '../tests/entities/test-user-answer.entity';
 import { Test, TestType } from '../tests/entities/test.entity';
@@ -120,9 +120,13 @@ export class AttemptsService {
 
     const questionIds = testQuestions.map(tq => tq.questionId);
     
+    if (questionIds.length === 0) {
+      return [];
+    }
+    
     return this.questionRepository.find({
       where: {
-        questionId: { $in: questionIds } as any,
+        questionId: In(questionIds),
         tenantId: authContext.tenantId,
         organisationId: authContext.organisationId,
       },
