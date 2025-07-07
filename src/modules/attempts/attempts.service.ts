@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { TestAttempt, AttemptStatus, SubmissionType, ReviewStatus, ResultType } from '../tests/entities/test-attempt.entity';
-import { TestUserAnswer } from '../tests/entities/test-user-answer.entity';
+import { TestUserAnswer, ReviewStatus as AnswerReviewStatus } from '../tests/entities/test-user-answer.entity';
 import { Test, TestType } from '../tests/entities/test.entity';
 import { TestQuestion } from '../tests/entities/test-question.entity';
 import { TestRule } from '../tests/entities/test-rule.entity';
@@ -336,12 +336,12 @@ export class AttemptsService {
     return this.attemptRepository
       .createQueryBuilder('attempt')
       .leftJoin('testUserAnswers', 'answers', 'answers.attemptId = attempt.attemptId')
-      .leftJoin('questions', 'question', 'question.id = answers.questionId')
+      .leftJoin('questions', 'question', 'question.questionId = answers.questionId')
       .where('attempt.tenantId = :tenantId', { tenantId: authContext.tenantId })
       .andWhere('attempt.organisationId = :organisationId', { organisationId: authContext.organisationId })
       .andWhere('attempt.reviewStatus = :reviewStatus', { reviewStatus: ReviewStatus.PENDING })
       .andWhere('question.gradingType = :gradingType', { gradingType: GradingType.EXERCISE })
-      .andWhere('answers.reviewStatus = :answerReviewStatus', { answerReviewStatus: 'P' })
+      .andWhere('answers.reviewStatus = :answerReviewStatus', { answerReviewStatus: AnswerReviewStatus.PENDING })
       .select([
         'attempt.attemptId',
         'attempt.testId',
